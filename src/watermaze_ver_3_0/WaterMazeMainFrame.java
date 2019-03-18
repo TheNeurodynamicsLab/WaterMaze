@@ -467,8 +467,8 @@ private File currDataFile; // // stores the current data file that is being used
         Image = new int [xMax][yMax];
 
         for (int count = 0 ; count < xlen ; count++){
-            xidx = (dataX[count] > 0 && dataX[count] < 1 ) ? 1 : Math.round(dataX[count]);
-            yidx = (dataY[count] > 0 && dataY[count] < 1) ? 1 : Math.round(dataY[count]);
+            xidx = (dataX[count] > 0 && dataX[count] < 1 ) ? 1 : Math.round(new Float(dataX[count]));
+            yidx = (dataY[count] > 0 && dataY[count] < 1) ? 1 : Math.round(new Float (dataY[count]));
             if(xidx < xMax && yidx < yMax && xidx > 0 && yidx > 0)
                 Image[xidx][yidx] += 10;
         }
@@ -488,8 +488,8 @@ private File currDataFile; // // stores the current data file that is being used
             return null;
         Image = new int [xMax * yMax];
         for (int count = 0 ; count < xlen ; count++){
-            xidx = (dataX[count] > 0 && dataX[count] < 1 ) ? 1 : Math.round(dataX[count]);
-            yidx = (dataY[count] > 0 && dataY[count] < 1) ? 1 : Math.round(dataY[count]);
+            xidx = (dataX[count] > 0 && dataX[count] < 1 ) ? 1 : Math.round(new Float(dataX[count]));
+            yidx = (dataY[count] > 0 && dataY[count] < 1) ? 1 : Math.round(new Float(dataY[count]));
             if(xidx < xMax && yidx < yMax && xidx > 0 && yidx > 0)
                 Image[((yidx-1)*xMax)+ xidx] += 10;
         }
