@@ -25,10 +25,14 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
+import ij.io.FileSaver;
+import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
-import java.awt.FileDialog;
-import java.awt.LayoutManager;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 /**
  *
  * @author Balaji
@@ -139,10 +143,14 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jTextFieldXDim = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jTextFieldYDim = new javax.swing.JTextField();
         RawImagePanel = new watermaze_ver_3_0.ImagePanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        openMenuItem = new javax.swing.JMenuItem();
+        importDataFiles = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
@@ -161,6 +169,23 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         setBounds(new java.awt.Rectangle(0, 0, 480, 480));
         getContentPane().setLayout(new java.awt.FlowLayout());
 
+        jLabel1.setText("XDim");
+        getContentPane().add(jLabel1);
+
+        jTextFieldXDim.setText("240");
+        jTextFieldXDim.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextFieldXDimActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jTextFieldXDim);
+
+        jLabel2.setText("YDim");
+        getContentPane().add(jLabel2);
+
+        jTextFieldYDim.setText("240");
+        getContentPane().add(jTextFieldYDim);
+
         javax.swing.GroupLayout RawImagePanelLayout = new javax.swing.GroupLayout(RawImagePanel);
         RawImagePanel.setLayout(RawImagePanelLayout);
         RawImagePanelLayout.setHorizontalGroup(
@@ -177,14 +202,14 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
 
-        openMenuItem.setMnemonic('o');
-        openMenuItem.setText("Import Data File(s)");
-        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        importDataFiles.setMnemonic('o');
+        importDataFiles.setText("Generate HM from XYData ASCII");
+        importDataFiles.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openMenuItemActionPerformed(evt);
+                importDataFilesActionPerformed(evt);
             }
         });
-        fileMenu.add(openMenuItem);
+        fileMenu.add(importDataFiles);
 
         saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save Project");
@@ -284,14 +309,18 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         int trailStart = 4;
         int n_Skippped = 0;*/
         this.outDirectory = null;
-        
+        File[] files = null;
         if(this.dataFiles == null){
-            JFileChooser fc = new JFileChooser();
-            fc.setDialogType(JFileChooser.OPEN_DIALOG);
+            JFileChooser fc = new JFileChooser("E:\\WORK\\Work_Water maze analysis\\New folder\\BeforeCSIRReviewExam\\YongSeokMice\\D16G");
+            fc.setMultiSelectionEnabled(true);
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int status = fc.showOpenDialog(this);
+//            fc.setDialogType(JFileChooser.OPEN_DIALOG);
             //fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.showDialog(null, "Choose the datafile");
-
-            currDataFile = fc.getSelectedFile();
+            files = fc.getSelectedFiles(); //new line for multiple files
+            currDataFile = files[0]; //new line for multiple files
+//            currDataFile = fc.getSelectedFile();
         }
         else{
             currDataFile = null; //we have to run through the loop and get the files one after another
@@ -303,7 +332,11 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         //progressBar.setMinimum(0);
         //progressBar.setMaximum(nFiles-1);
 
-       generateMap();
+        for(int i = 0; i < files.length; i++){
+            currDataFile = files[i];
+            generateMap();
+        }
+        
           //  progressBar.setValue(count);
         //}
 
@@ -313,30 +346,142 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_analyseMenuActionPerformed
 
-    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+    private void importDataFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importDataFilesActionPerformed
         // TODO add your handling code here:
+        this.outDirectory = null;
+        File[] files = null;
+        if(this.dataFiles == null){
+            JFileChooser fc = new JFileChooser("E:\\WORK\\Work_Water maze analysis\\New folder\\BeforeCSIRReviewExam\\YongSeokMice\\D16G");
+            fc.setMultiSelectionEnabled(true);
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int status = fc.showOpenDialog(this);
+//            fc.setDialogType(JFileChooser.OPEN_DIALOG);
+            //fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            files = fc.getSelectedFiles(); //new line for multiple files
+            currDataFile = files[0]; //new line for multiple files
+//            currDataFile = fc.getSelectedFile();
+        }
+        else{
+            currDataFile = null; //we have to run through the loop and get the files one after another
+        }
+        if (currDataFile == null)
+            return;
        
-        
-    }//GEN-LAST:event_openMenuItemActionPerformed
+            
+        float xData, yData;                             //for storing the read xPixel no and Y Pixel no of the PixelIntesity read from the file. 
+
+        FileReader fReader = null;                      //Reader class : Java class for reading text files (ASCII) 
+        int c = 0;                                          //variable to store the byte/int data that is read from the file 
+        String dataString = "";                        //accumulates the intenisty data as a string of numbers and decimal through concatenation. Will be converted to float
+
+//        if (status == JFileChooser.APPROVE_OPTION) {
+
+            dataFiles = files;
+            int noFiles = dataFiles.length;                     //stores the number of files selected by the user
+
+            /**
+             * Initialization of variables
+             */
+            xData = 0;
+            yData = 0;
+
+            /**
+             * Reading the size of the image (in pixels) from user input
+             */
+            int xPixelNo = Integer.parseInt(jTextFieldXDim.getText()); //xdim = 1200 : swiss mice, 727 : balbc
+            int yPixelNo = Integer.parseInt(jTextFieldYDim.getText()); //ydim = 1048 : swiss mice, 697 : balbc
+            int totalPixels = xPixelNo * yPixelNo;
+
+            //when file format has been selected for one component
+
+//            ArrayList<Float> xDataList = new ArrayList();                                          
+//            ArrayList<Float> yDataList = new ArrayList();                                          
+//            ArrayList<Float> pData = new ArrayList();                        //Data holder: float array for storing the complete image data
+                //boolean inX = true;
+
+                /**
+                 * Loop through file selection array one at a time
+                 */
+            for (File curFile : dataFiles) {
+                ArrayList<Float> xDataList = new ArrayList();                                          
+                ArrayList<Float> yDataList = new ArrayList();                                          
+
+//                    /**
+//                     * Initializing the float array to have 0's to start with
+//                     */
+//                    for (int count = 0; count < totalPixels; count++) {
+//                        pData.add((float) 0);
+//                    }
+
+                    /**
+                     * Loop through file selection array one at a time
+                     */
+                    if (curFile.exists()) {
+                        try {
+                            fReader = new FileReader(curFile);
+                        } catch (FileNotFoundException ex) {
+                            Logger.getLogger(WaterMazeMainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        try {
+                            while ((c = fReader.read()) != -1) {
+                                switch (c) {
+                                    case '\t':
+                                        xData = Math.round(Float.parseFloat(dataString));
+                                        xDataList.add(xData);
+                                        dataString = "";
+                                        break;
+                                    case '\n':
+                                        yData = Math.round(Float.parseFloat(dataString));
+                                        yDataList.add(yData);
+                                        dataString = "";
+                                        break;
+                                    default:
+                                        dataString += (char) c;
+                                }
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(WaterMazeMainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        DataX = new float[xDataList.size()];
+                        DataY = new float[yDataList.size()];
+                        int count = 0;
+                        for(float x : xDataList){
+                            DataX[count] = x;
+                            DataY[count] = yDataList.get(count);
+                            count++;
+                        }
+                        
+                        int[] result = this.createImgdata(DataX, DataY, xPixelNo, yPixelNo);
+                        ImageProcessor ip = new FloatProcessor(xPixelNo, yPixelNo, result);
+                        ImagePlus img = new ImagePlus(curFile.getName(), ip);
+                        new FileSaver(img).saveAsTiff(curFile.getParent() + File.separator + "ResTime_" + img.getTitle() +".tiff");
+                    }                 
+                }      
+    }//GEN-LAST:event_importDataFilesActionPerformed
 
     private void ExpXYActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExpXYActionPerformed
         // TODO add your handling code here:
         int status = 0;
         if(dataFiles == null || dataFiles.length == 0){
-            JFileChooser fc = new JFileChooser();
+//            JFileChooser fc = new JFileChooser();
+            JFileChooser fc = new JFileChooser("F:\\WaterMazeCont\\00.DGDAF_collab");
+            fc.setMultiSelectionEnabled(true);            
             status = fc.showOpenDialog(this);
             if(status == JFileChooser.CANCEL_OPTION){
                 JOptionPane.showMessageDialog(this,"You need to choose a datafile to export the co-ordinates");
                 return;
             }
-            this.currDataFile = fc.getSelectedFile();
+
+//            this.currDataFile = fc.getSelectedFile();
+            File[] fileList = fc.getSelectedFiles();
+            for(int i = 0; i <fileList.length; i++){
+            this.currDataFile = fileList[i];
             if(!currDataFile.exists()){
                 JOptionPane.showMessageDialog(this, "The file "+ currDataFile.getName()+"does not exist");
                 return;
             }
-            
-        }
-        
+                   
         status = readWMDFData();
         
         if (status!= 0  ){
@@ -390,9 +535,17 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(WaterMazeMainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+            }
+        }
+            
             
         
     }//GEN-LAST:event_ExpXYActionPerformed
+
+    private void jTextFieldXDimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldXDimActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextFieldXDimActionPerformed
 
     /**
      * @param args the command line arguments
@@ -442,8 +595,12 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
+    private javax.swing.JMenuItem importDataFiles;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField jTextFieldXDim;
+    private javax.swing.JTextField jTextFieldYDim;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
@@ -664,7 +821,7 @@ private File currDataFile; // // stores the current data file that is being used
                  
                  
                  //FPanel.add(new ImageCanvas(imp_filt));
-                 this.RawImagePanel.add(new ImageCanvas(imp_raw));
+//                 this.RawImagePanel.add(new ImageCanvas(imp_raw));
                  
                  
                  this.add(new ImageCanvas(imp_filt));
@@ -693,7 +850,8 @@ private File currDataFile; // // stores the current data file that is being used
                 
                 
                 
-                String baseName = outputDirectory + File.separator +"Map_of_" + probeNo + tmpData.getName().substring(0, tmpData.getName().lastIndexOf("."));
+                //MP: Original Code //String baseName = outputDirectory + File.separator +"Map_of_" + probeNo + tmpData.getName().substring(0, tmpData.getName().lastIndexOf("."));
+                String baseName = outputDirectory + File.separator +"Map_of_" + tmpData.getName().substring(0, tmpData.getName().lastIndexOf("."));
                 File outFile = new File( baseName + "_filtered.jpg");
                 File pngFile  = new File (baseName + ".png");
                 
