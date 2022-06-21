@@ -442,6 +442,11 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
                                         dataString += (char) c;
                                 }
                             }
+                            if(!dataString.isEmpty()){  //some files do not end after newline but terminate at the eol.
+                                                        //to account for them.
+                                yData = Math.round(Float.parseFloat(dataString));
+                                yDataList.add(yData);
+                            }
                         } catch (IOException ex) {
                             Logger.getLogger(WaterMazeMainFrame.class.getName()).log(Level.SEVERE, null, ex);
                         }
