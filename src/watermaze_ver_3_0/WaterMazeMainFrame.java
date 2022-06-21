@@ -173,6 +173,7 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         getContentPane().add(jLabel1);
 
         jTextFieldXDim.setText("240");
+        jTextFieldXDim.setPreferredSize(new java.awt.Dimension(100, 22));
         jTextFieldXDim.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextFieldXDimActionPerformed(evt);
@@ -184,6 +185,7 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         getContentPane().add(jLabel2);
 
         jTextFieldYDim.setText("240");
+        jTextFieldYDim.setPreferredSize(new java.awt.Dimension(100, 22));
         getContentPane().add(jTextFieldYDim);
 
         javax.swing.GroupLayout RawImagePanelLayout = new javax.swing.GroupLayout(RawImagePanel);
@@ -425,7 +427,8 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
                         try {
                             while ((c = fReader.read()) != -1) {
                                 switch (c) {
-                                    case '\t':
+                                    case ' ':
+                                    case '\t' :
                                         xData = Math.round(Float.parseFloat(dataString));
                                         xDataList.add(xData);
                                         dataString = "";
