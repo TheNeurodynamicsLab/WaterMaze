@@ -448,6 +448,8 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
 
                         DataX = new float[xDataList.size()];
                         DataY = new float[yDataList.size()];
+                        if(DataX.length != DataY.length)
+                            javax.swing.JOptionPane.showMessageDialog(null, "X and Y Data length does not match");
                         int count = 0;
                         for(float x : xDataList){
                             DataX[count] = x;
