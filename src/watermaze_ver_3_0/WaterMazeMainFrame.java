@@ -172,7 +172,7 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         jLabel1.setText("XDim");
         getContentPane().add(jLabel1);
 
-        jTextFieldXDim.setText("240");
+        jTextFieldXDim.setText("1920");
         jTextFieldXDim.setPreferredSize(new java.awt.Dimension(100, 22));
         jTextFieldXDim.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -184,7 +184,7 @@ public class WaterMazeMainFrame extends javax.swing.JFrame {
         jLabel2.setText("YDim");
         getContentPane().add(jLabel2);
 
-        jTextFieldYDim.setText("240");
+        jTextFieldYDim.setText("1080");
         jTextFieldYDim.setPreferredSize(new java.awt.Dimension(100, 22));
         getContentPane().add(jTextFieldYDim);
 
